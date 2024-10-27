@@ -2,3 +2,5 @@ pandas
 psycopg2-binary
 requests_toolbelt
 python-dotenv
+sqlalchemy
+pre_commit

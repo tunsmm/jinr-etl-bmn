@@ -9,7 +9,7 @@ file_handler = logging.FileHandler(log_file)
 file_handler.setLevel(logging.INFO)
 
 formatter = logging.Formatter(
-    fmt='%(asctime)s - %(levelname)s - %(message)s',
+    fmt='%(asctime)s %(levelname)s %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
 )
 file_handler.setFormatter(formatter)
