@@ -57,8 +57,8 @@ x-airflow-common:
     - ./app/config:/opt/airflow/config
     - ./app/plugins:/opt/airflow/plugins
     - ./monitoring.log:/opt/airflow/monitoring.log:file
-    - ./dir_to_copy:./dir_to_copy
-    - ./dir_to_monitor:./dir_to_monitor
+    - ./dir_with_copied_files:/opt/airflow/dir_with_copied_files
+    - ./dir_to_monitor:/opt/airflow/dir_to_monitor
   user: "${AIRFLOW_UID:-1000}:0"
   # user: "50000:0"
   depends_on:
