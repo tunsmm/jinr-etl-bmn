@@ -17,7 +17,7 @@ DIRECTORY_TO_MONITOR = "./dir_to_monitor/"
 os.makedirs(DIRECTORY_TO_MONITOR, exist_ok=True)
 
 # Путь к директории, куда требуется копировать
-REMOTE_DIRECTORY ="./dir_to_copy/"
+REMOTE_DIRECTORY ="./dir_with_copied_files/"
 os.makedirs(REMOTE_DIRECTORY, exist_ok=True)
 
 NUMBER_OF_WORKERS_FOR_COPY_FILES = 3
