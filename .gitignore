@@ -5,6 +5,8 @@ __pycache__/
 
 dir_to_monitor/
 dir_to_copy/
+dir_with_copied_files/
+logs/
 
 # C extensions
 *.so
