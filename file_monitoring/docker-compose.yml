@@ -26,6 +26,8 @@
 #
 # Feel free to modify this file to suit your needs.
 ---
+name: jinr
+
 x-airflow-common:
   &airflow-common
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
@@ -149,7 +151,7 @@ services:
 
   airflow-worker:
     <<: *airflow-common
-    command: celery worker
+    command: apt-get update && apt-get install -y xrootd-client && exec airflow celery worker
     healthcheck:
       # yamllint disable rule:line-length
       test:
