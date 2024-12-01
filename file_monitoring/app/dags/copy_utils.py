@@ -96,4 +96,4 @@ def copy_file_to_server_via_scp(local_path: str, remote_path: str):
         - local_path (str) is something like '/home/sergiy/file'
         - remote_path (str) is something like 'root@losst.pro:/root/'
     """
-    subprocess.run(["scp", local_path, remote_path])
+    subprocess.run(["xrdcp", local_path, remote_path])
