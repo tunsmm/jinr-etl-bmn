@@ -53,6 +53,14 @@ x-airflow-common:
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
+    MAIN_DB_USER: ${MAIN_DB_USER:-}
+    MAIN_DB_PASSWORD: ${MAIN_DB_PASSWORD:-}
+    MAIN_DB_HOST: ${MAIN_DB_HOST:-}
+    MAIN_DB_PORT: ${MAIN_DB_PORT:-}
+    MAIN_DB_NAME: ${MAIN_DB_NAME:-}
+    DEBUG: ${DEBUG:-}
+    REMOTE_SERVER: ${REMOTE_SERVER:-}
+    REMOTE_USER: ${REMOTE_USER:-}
   volumes:
     - ./app/dags:/opt/airflow/dags
     - ./app/logs:/opt/airflow/logs
@@ -151,7 +159,7 @@ services:
 
   airflow-worker:
     <<: *airflow-common
-    command: apt-get update && apt-get install -y xrootd-client && exec airflow celery worker
+    command: exec apt-get update && exec apt-get install -y xrootd-client && exec airflow celery worker
     healthcheck:
       # yamllint disable rule:line-length
       test:
@@ -263,9 +271,26 @@ services:
       - bash
       - -c
       - airflow
+  
+  telegram-bot:
+    image: python:3.11-slim 
+    volumes:
+      - ./app:/app
+    working_dir: /app
+    environment:
+      <<: *airflow-common-env
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-no_token}
+    command: >
+      /bin/bash -c "
+      pip install --no-cache-dir -r /app/requirements.txt &&
+      python ./telegram/bot.py"
+    depends_on:
+      - file-info-database
+    # restart: always
 
   # You can enable flower by adding "--profile flower" option e.g. docker-compose --profile flower up
   # or by explicitly targeted on the command line e.g. docker-compose up flower.
+  # See: https://docs.docker.com/compose/profiles/
   flower:
     <<: *airflow-common
     command: celery flower
