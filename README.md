@@ -1,3 +1,5 @@
+This is a project to develop ETL system for JINR's experiment BM@N. There we develop automated system for distributed processing of BM@N experiment data based on the task chain scheduling service.
+
 # Airflow File Monitoring
 
 Automating the Copying of Experimental Files to 'Cold' Storage.
@@ -122,3 +124,6 @@ Containers exposes a couple of WebUI's:
 
 - Airflow Webserver: [127.0.0.1:8080](http://127.0.0.1:8080/)
 - Flower: [127.0.0.1:5555](http://127.0.0.1:5555/)
+
+## Contacts
+- [Nikita Ilin](t.me/tunsmm)
