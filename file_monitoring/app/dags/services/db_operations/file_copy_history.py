@@ -1,6 +1,9 @@
-from sqlalchemy.orm import Session
-from models.db import FileCopyHistory
 from datetime import datetime
+from typing import List, Tuple
+
+from sqlalchemy.orm import Session
+
+from models.db import FileCopyHistory
 
 
 def create_file_copy_history(session: Session, file_name: str, file_size: int, file_hash_before: str):
@@ -23,3 +26,26 @@ def update_file_copy_history(session: Session, entry_id: int, file_hash_after: s
         history_entry.file_hash_after = file_hash_after
         history_entry.copy_ended_at = datetime.now()
         session.commit()
+
+
+def filter_file_copy_history_between_dates(
+    session: Session,
+    field_name: str,
+    start_date: datetime = None,
+    end_date: datetime = None,
+) -> List[FileCopyHistory]:
+    """Фильтрует записи в интервале дат по указанному полю."""
+    field = getattr(FileCopyHistory, field_name, None)
+
+    if field is None:
+        raise ValueError(f"Field '{field_name}' does not exist in the FileCopyHistory model.")
+    
+    match (start_date, end_date):
+        case (None, None):
+            raise ValueError("Both dates cannot be None.")
+        case (None, _):
+            return session.query(FileCopyHistory).filter(field <= end_date).all()
+        case (_, None):
+            return session.query(FileCopyHistory).filter(field >= start_date).all()
+        case (_, _):
+            return session.query(FileCopyHistory).filter(field.between(start_date, end_date)).all()
