@@ -26,20 +26,21 @@ class TelegramBot:
 
     def save_user(self, user_id):
         """Сохраняет идентификатор пользователя в файл."""
-        if user_id not in self.allowed_users:
-            self.allowed_users.add(user_id)
-            with open('users.json', 'w') as f:
-                json.dump(list(self.allowed_users), f)
+        self.allowed_users.add(user_id)
+        with open('users.json', 'w') as f:
+            json.dump(list(self.allowed_users), f)
 
-    async def send_message_to_all(self, message):
+    async def send_message_to_all(self, message, file=None):
         """Отправляет сообщение всем пользователям."""
         for user_id in self.allowed_users:
-            await self.send_message(user_id, message)
+            await self.send_message(user_id, message, file)
 
-    async def send_message(self, chat_id, message):
+    async def send_message(self, chat_id, message, file=None):
         """Отправляет сообщение пользователю."""
         try:
             await self.bot.send_message(chat_id=chat_id, text=message)
+            if file:
+                await self.bot.send_document(chat_id=chat_id, document=file)
             print(f"Сообщение отправлено в {chat_id}: {message}")
         except Exception as e:
             print(f"Ошибка при отправке сообщения: {e}")
@@ -47,15 +48,18 @@ class TelegramBot:
     async def handle_message(self, message: types.Message):
         """Обрабатывает входящие сообщения."""
         user_id = message.from_user.id
-        self.save_user(user_id)  # Сохраняем пользователя при любом сообщении
+        if user_id not in self.allowed_users:
+            self.save_user(user_id)  # Сохраняем пользователя при любом сообщении
+            await self.send_message(user_id, "Вы добавлены в список получателей.")
 
-        # Пример простого ответа
-        await self.send_message(user_id, "Ваше сообщение получено!")
-
-    async def periodic_message_sender(self):
+    async def periodic_message_sender(self, pipeline_method):
         """Отправляет сообщение всем пользователям каждую минуту."""
         while True:
-            await self.send_message_to_all("Это сообщение отправлено всем пользователям каждую минуту.")
+            for function in pipeline_method:
+                message, file = function()
+                if message:
+                    await self.send_message_to_all(message, file)
+
             await asyncio.sleep(60)
 
     async def start_polling(self):
