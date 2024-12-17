@@ -13,6 +13,41 @@ Automating the Copying of Experimental Files to 'Cold' Storage.
 - [dags/](app/dags) — Sample DAGs and common libraries.
 
 
+## Project structure
+
+The overall structure of the project looks like this:
+```
+├── README.md
+├── app
+│   ├── dags
+│   │   ├── config
+│   │   │   ├── .env
+│   │   │   └── settings.py
+│   │   ├── dags.py
+│   │   └── monitoring.py
+│   ├── logs*
+│   │   ├── dag_processor_manager
+│   │   │   └── dag_processor_manager.log
+│   │   └── scheduler
+│   │       ├── 2024-10-25
+│   │       └── latest -> 2024-10-25
+│   └── requirements.txt
+├── dir_with_copied_files*
+├── dir_to_monitor*
+├── docker-compose.yml
+└── monitoring.log
+```
+
+Files and directories marked with an asterisk may not exist before deploying docker images.
+
+.env file must be created independently in the root directory. The database must have the same access rights.
+
+monitoring.log – a file responsible for all logs that were added independently as part of the system's development
+
+Log files from open-source Airflow components are stored in the app/logs/ directory:
+- the dag_processor_manager directory stores information about the regular analysis of the app/dags directory for new DAGs, 
+- the scheduler directory stores information about the scheduled launch of found DAGs.
+
 ## Start and stop
 
 The easiest way is just run these two commands, but read all docs to get sure that you will reach the proper behaviour of system
@@ -20,6 +55,8 @@ The easiest way is just run these two commands, but read all docs to get sure th
 docker compose up airflow-init
 docker compose --profile flower up -d
 ```
+
+But if you want to run with some specific way, you can execute these commands:
 
 To configure all Airflow components use:
 
@@ -71,15 +108,10 @@ docker compose up -d
 docker compose --profile flower up -d
 ```
 
-Then you can stop it if you need:
+Then you can stop it if you need stop and remove all containers:
 
 ```bash
 docker stop $(docker ps -a -q)
-```
-
-And remove all containers:
-
-```bash
 docker rm $(docker ps -a -q)
 ```
 
