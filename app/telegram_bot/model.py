@@ -55,7 +55,7 @@ class TelegramBot:
     async def periodic_message_sender(self, pipeline_method):
         """Отправляет сообщение всем пользователям каждую минуту."""
         while True:
-            for function in pipeline_method:
+            for function in pipeline_method():
                 message, file = function()
                 if message:
                     await self.send_message_to_all(message, file)
