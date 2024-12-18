@@ -1,6 +1,7 @@
 from datetime import datetime
-from typing import List, Tuple
+from typing import List
 
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from models.db import FileCopyHistory
@@ -49,3 +50,15 @@ def filter_file_copy_history_between_dates(
             return session.query(FileCopyHistory).filter(field >= start_date).all()
         case (_, _):
             return session.query(FileCopyHistory).filter(field.between(start_date, end_date)).all()
+
+
+def filter_not_copied_files(
+    session: Session,
+    threshold_date: datetime,
+) -> List[FileCopyHistory]:
+    return session.query(FileCopyHistory).filter(
+        and_(
+            FileCopyHistory.copy_ended_at != None,
+            FileCopyHistory.file_created_at <= threshold_date
+        )
+    ).all
