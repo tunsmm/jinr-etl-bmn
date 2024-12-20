@@ -87,7 +87,7 @@ class StatsFlow:
         
         return message, buffered_file
     
-    async def execute_pipeline_methods(self) -> Generator:
+    def execute_pipeline_methods(self) -> Generator:
         """Вызывает все методы получения истории копирования файлов"""
         yield self.get_filter_file_copy_history
         yield self.get_not_copied_files
