@@ -63,9 +63,12 @@ x-airflow-common:
     REMOTE_USER: ${REMOTE_USER:-}
   volumes:
     - ./app/dags:/opt/airflow/dags
+    - ./app/config:/opt/airflow/dags/config
+    - ./app/models:/opt/airflow/dags/models
+    - ./app/services:/opt/airflow/dags/services
+    - ./app/db_utils.py:/opt/airflow/dags/db_utils.py
     - ./app/logs:/opt/airflow/logs
     - ./app/config:/opt/airflow/config
-    - ./app/plugins:/opt/airflow/plugins
     - ./monitoring.log:/opt/airflow/monitoring.log:file
     - ./dir_with_copied_files:/opt/airflow/dir_with_copied_files
     - ./dir_to_monitor:/opt/airflow/dir_to_monitor
@@ -159,7 +162,7 @@ services:
 
   airflow-worker:
     <<: *airflow-common
-    command: exec apt-get update && exec apt-get install -y xrootd-client && exec airflow celery worker
+    command: airflow celery worker
     healthcheck:
       # yamllint disable rule:line-length
       test:
@@ -280,10 +283,11 @@ services:
     environment:
       <<: *airflow-common-env
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-no_token}
+      PYTHONPATH: "/app"
     command: >
       /bin/bash -c "
       pip install --no-cache-dir -r /app/requirements.txt &&
-      python ./telegram/bot.py"
+      python ./telegram_bot/bot.py"
     depends_on:
       - file-info-database
     # restart: always
