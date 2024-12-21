@@ -58,7 +58,7 @@ def filter_not_copied_files(
 ) -> List[FileCopyHistory]:
     return session.query(FileCopyHistory).filter(
         and_(
-            FileCopyHistory.copy_ended_at != None,
+            FileCopyHistory.copy_ended_at == None,
             FileCopyHistory.file_created_at <= threshold_date
         )
-    ).all
+    ).all()
