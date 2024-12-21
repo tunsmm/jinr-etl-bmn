@@ -12,7 +12,7 @@ with DAG(
     dag_id="monitoring_dag",
     default_args=DEFAULT_DAG_ARGS,
     description="DAG for monitoring files",
-    schedule_interval=timedelta(seconds=50),
+    schedule_interval=timedelta(seconds=10),
 ):
     task_monitoring = PythonOperator(
         task_id="task_monitoring",
@@ -24,7 +24,7 @@ with DAG(
     "creating_files_dag",
     default_args=DEFAULT_DAG_ARGS,
     description="DAG for creating files",
-    schedule_interval=timedelta(seconds=300),
+    schedule_interval=timedelta(seconds=10),
 ):
     # Определение вспомогательного PythonOperator для создания файлов
     task_creating = PythonOperator(
@@ -33,7 +33,7 @@ with DAG(
         op_kwargs={
             "directory": DIRECTORY_TO_MONITOR,
             "num_files": 1,
-            "file_size_range": (100_000_000, 500_000_000),
+            "file_size_range": (10_000_000, 50_000_000),
             "change_file_content_index": 2,
         },
     )
