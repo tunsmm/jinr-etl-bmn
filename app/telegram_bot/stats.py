@@ -1,14 +1,10 @@
-from typing import Generator, List, Tuple, Optional
+from typing import Generator, Tuple, Optional
 import datetime
 
 from aiogram.types import InputFile, BufferedInputFile
 from sqlalchemy.orm import Session
 
-# from sys import path as syspath
-# from os import path as ospath
-# syspath.append(ospath.join(ospath.dirname(ospath.realpath(__file__)),'..','dags'))
-
-from models.db import FileCopyHistory
+from config.logger import logger
 from services.db_operations.file_copy_history import (
     filter_file_copy_history_between_dates, 
     filter_not_copied_files,
@@ -17,25 +13,18 @@ from db_utils import create_sa_engine_to_main_db, create_tables_in_db
 
 create_tables_in_db()
 
-def get_filter_file_copy_history(filtered_entries: List[FileCopyHistory]) -> Tuple[Optional[str], Optional[int]]:
-    filtered_entries = filter_file_copy_history_between_dates()
-    file_names = [entry.file_name for entry in filtered_entries]
-    completed_count = sum(1 for entry in filtered_entries if entry.copy_ended_at is not None)
-    message = f"{file_names} + {completed_count}"
-    file = None
-    return message, file
-
 
 class StatsFlow:
     def __init__(self):
         self.start_datetime_filter = datetime.datetime.now()
         self.end_datetime_filter = None
-        self.last_datetime_get_not_copied_files = None
+        logger.info(f'StatsFlow is started with start_datetime_filter = {self.start_datetime_filter}')
 
     def get_filter_file_copy_history(self) -> Tuple[Optional[str], Optional[InputFile]]:
         self.end_datetime_filter = datetime.datetime.now()
         with create_sa_engine_to_main_db() as engine:
             with Session(engine) as session:
+                logger.info(f'get_filter_file_copy_history | {self.start_datetime_filter} - {self.end_datetime_filter}')
                 filtered_entries = filter_file_copy_history_between_dates(
                     session,
                     "copy_ended_at",
@@ -44,13 +33,15 @@ class StatsFlow:
                 )
 
         if not filtered_entries:
+            logger.info('get_filter_file_copy_history | no filtered_entries')
             return None, None
 
         file_names = "\n".join([entry.file_name for entry in filtered_entries])
         completed_count = sum(1 for entry in filtered_entries if entry.copy_ended_at is not None)
         message = f"There are {completed_count} files copied.\nFilenames in .txt file below."
+        logger.info(f'get_filter_file_copy_history | message is {message}')
         
-        # Кодируем строку в байты и создаем класс для передачи файла
+        # Encode the string to bytes and create a class to transfer as a file
         file_names_bytes = file_names.encode('utf-8')
         buffered_file = BufferedInputFile(file=file_names_bytes, filename='file_names.txt')
 
@@ -59,35 +50,28 @@ class StatsFlow:
         return message, buffered_file
     
     def get_not_copied_files(self) -> Tuple[Optional[str], Optional[InputFile]]:
-        if (
-            self.last_datetime_get_not_copied_files and 
-            self.last_datetime_get_not_copied_files < datetime.datetime.now() - datetime.timedelta(seconds=1)
-        ):
-            self.last_datetime_get_not_copied_files = datetime.datetime.now()
-        else:
-            return None, None
-
+        threshold_date = datetime.datetime.now() - datetime.timedelta(hours=1)
         with create_sa_engine_to_main_db() as engine:
             with Session(engine) as session:
                 filtered_entries = filter_not_copied_files(
                     session,
-                    self.last_datetime_get_not_copied_files - datetime.timedelta(seconds=1),
+                    threshold_date,
                 )
 
         if not filtered_entries:
+            logger.info(f'get_not_copied_files | All files above {threshold_date} are copied')
             return None, None
 
         file_names = "\n".join([entry.file_name for entry in filtered_entries])
-        completed_count = sum(1 for entry in filtered_entries if entry.copy_ended_at is not None)
-        message = f"There are {completed_count} files that still are not copied.\nFilenames in .txt file below."
+        message = f"There are {len(filtered_entries)} files that still are not copied."
         
-        # Кодируем строку в байты и создаем класс для передачи файла
+        # Encode the string to bytes and create a class to transfer as a file
         file_names_bytes = file_names.encode('utf-8')
         buffered_file = BufferedInputFile(file=file_names_bytes, filename='file_names.txt')
         
         return message, buffered_file
     
     def execute_pipeline_methods(self) -> Generator:
-        """Вызывает все методы получения истории копирования файлов"""
-        yield self.get_filter_file_copy_history
+        """Call all methods to retrieve file copy history"""
+        # yield self.get_filter_file_copy_history
         yield self.get_not_copied_files
