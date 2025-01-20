@@ -274,23 +274,6 @@ services:
       - bash
       - -c
       - airflow
-  
-  telegram-bot:
-    image: python:3.11-slim 
-    volumes:
-      - ./app:/app
-    working_dir: /app
-    environment:
-      <<: *airflow-common-env
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-no_token}
-      PYTHONPATH: "/app"
-    command: >
-      /bin/bash -c "
-      pip install --no-cache-dir -r /app/requirements.txt &&
-      python ./telegram_bot/bot.py"
-    depends_on:
-      - file-info-database
-    # restart: always
 
   # You can enable flower by adding "--profile flower" option e.g. docker-compose --profile flower up
   # or by explicitly targeted on the command line e.g. docker-compose up flower.
