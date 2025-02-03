@@ -6,6 +6,8 @@ __pycache__/
 # Airflow fixes due adding volumes
 airflow.cfg
 webserver_config.py
+airflow_db/
+file_info_db/
 app/dags/db_utils.py
 app/dags/models
 app/dags/config
